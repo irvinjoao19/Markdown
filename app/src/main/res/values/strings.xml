@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Markdown</string>
+    <string name="s_s_s_s_s_s">^s*|?s*-+s*(|s*-+s*)+|?s*$</string>
+</resources>

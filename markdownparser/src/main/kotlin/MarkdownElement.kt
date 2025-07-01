@@ -1,4 +1,4 @@
-package com.gongora.markdown.markdown
+package com.gongora.markdown.parser
 
 sealed class MarkdownElement {
     data class Header(val text: String, val level: Int) : MarkdownElement()

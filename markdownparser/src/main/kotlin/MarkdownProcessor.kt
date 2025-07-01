@@ -1,4 +1,4 @@
-package com.gongora.markdown.markdown
+package com.gongora.markdown.parser
 
 interface MarkdownProcessor {
 

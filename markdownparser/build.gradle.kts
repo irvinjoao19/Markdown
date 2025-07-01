@@ -22,5 +22,4 @@ dependencies {
     implementation(libs.compose.runtime)
     implementation(libs.compose.foundation)
     implementation(libs.compose.material)
-    implementation(libs.runtime.android)
 }

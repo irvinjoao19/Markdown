@@ -21,3 +21,12 @@ Use `Markdown` with an optional `MarkdownComponentFactory` to customize how each
 val elements = MarkdownProcessorImpl().parse(markdownText)
 Markdown(elements)
 ```
+
+## Sample Module
+
+The `sample` module provides a small CLI application demonstrating how to use
+`MarkdownProcessorImpl`. Run it with:
+
+```bash
+./gradlew :sample:run
+```

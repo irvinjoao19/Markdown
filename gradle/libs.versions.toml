@@ -2,11 +2,19 @@
 kotlin = "2.0.0"
 junit = "4.13.2"
 markdown = "0.7.3"
+compose = "1.6.10"
+runtimeAndroid = "1.8.3"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 jetbrains-markdown = { module = "org.jetbrains:markdown", version.ref = "markdown" }
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
+compose-material = { module = "org.jetbrains.compose.material:material", version.ref = "compose" }
+runtime-android = { group = "androidx.compose.runtime", name = "runtime-android", version.ref = "runtimeAndroid" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+compose = { id = "org.jetbrains.compose", version.ref = "compose" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 

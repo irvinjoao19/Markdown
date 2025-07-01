@@ -1,5 +1,7 @@
 plugins {
-    kotlin("jvm")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.compose)
+    alias(libs.plugins.kotlin.compose)
 }
 
 java {
@@ -17,4 +19,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 
 dependencies {
     implementation(libs.jetbrains.markdown)
+    implementation(libs.compose.runtime)
+    implementation(libs.compose.foundation)
+    implementation(libs.compose.material)
+    implementation(libs.runtime.android)
 }

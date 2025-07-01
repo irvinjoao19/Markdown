@@ -13,3 +13,11 @@ interface MarkdownProcessor {
 
 To use the library from another project, include the `markdownparser` module as a dependency
 and call `MarkdownProcessorImpl().parse()` with your Markdown string.
+
+The module also offers Jetpack Compose components for rendering the parsed elements.
+Use `Markdown` with an optional `MarkdownComponentFactory` to customize how each element is displayed:
+
+```kotlin
+val elements = MarkdownProcessorImpl().parse(markdownText)
+Markdown(elements)
+```

@@ -88,18 +88,78 @@ class MarkdownProcessorImpl : MarkdownProcessor {
 
         for (child in node.children) {
             when (child.type) {
-                MarkdownElementTypes.ATX_1 -> elements.add(MarkdownElement.Header(extractText(child, markdownText), 1))
-                MarkdownElementTypes.ATX_2 -> elements.add(MarkdownElement.Header(extractText(child, markdownText), 2))
-                MarkdownElementTypes.ATX_3 -> elements.add(MarkdownElement.Header(extractText(child, markdownText), 3))
-                MarkdownElementTypes.ATX_4 -> elements.add(MarkdownElement.Header(extractText(child, markdownText), 4))
-                MarkdownElementTypes.ATX_5 -> elements.add(MarkdownElement.Header(extractText(child, markdownText), 5))
-                MarkdownElementTypes.ATX_6 -> elements.add(MarkdownElement.Header(extractText(child, markdownText), 6))
+                MarkdownElementTypes.ATX_1 -> elements.add(
+                    MarkdownElement.Header(
+                        extractText(
+                            child,
+                            markdownText
+                        ), 1
+                    )
+                )
+                MarkdownElementTypes.ATX_2 -> elements.add(
+                    MarkdownElement.Header(
+                        extractText(
+                            child,
+                            markdownText
+                        ), 2
+                    )
+                )
+                MarkdownElementTypes.ATX_3 -> elements.add(
+                    MarkdownElement.Header(
+                        extractText(
+                            child,
+                            markdownText
+                        ), 3
+                    )
+                )
+                MarkdownElementTypes.ATX_4 -> elements.add(
+                    MarkdownElement.Header(
+                        extractText(
+                            child,
+                            markdownText
+                        ), 4
+                    )
+                )
+                MarkdownElementTypes.ATX_5 -> elements.add(
+                    MarkdownElement.Header(
+                        extractText(
+                            child,
+                            markdownText
+                        ), 5
+                    )
+                )
+                MarkdownElementTypes.ATX_6 -> elements.add(
+                    MarkdownElement.Header(
+                        extractText(
+                            child,
+                            markdownText
+                        ), 6
+                    )
+                )
                 MarkdownElementTypes.PARAGRAPH -> elements.addAll(parseParagraph(child, markdownText))
                 MarkdownElementTypes.UNORDERED_LIST, MarkdownElementTypes.ORDERED_LIST ->
                     elements.add(parseListElement(child, markdownText, child.type == MarkdownElementTypes.ORDERED_LIST))
-                MarkdownElementTypes.LIST_ITEM -> elements.add(MarkdownElement.ListItem(extractText(child, markdownText), false))
-                MarkdownElementTypes.CODE_BLOCK -> elements.add(MarkdownElement.CodeBlock(extractText(child, markdownText)))
-                MarkdownElementTypes.BLOCK_QUOTE -> elements.add(MarkdownElement.Quote(extractText(child, markdownText)))
+                MarkdownElementTypes.LIST_ITEM -> elements.add(
+                    MarkdownElement.ListItem(
+                        extractText(
+                            child,
+                            markdownText
+                        ), false
+                    )
+                )
+                MarkdownElementTypes.CODE_BLOCK -> elements.add(
+                    MarkdownElement.CodeBlock(
+                        extractText(child, markdownText)
+                    )
+                )
+                MarkdownElementTypes.BLOCK_QUOTE -> elements.add(
+                    MarkdownElement.Quote(
+                        extractText(
+                            child,
+                            markdownText
+                        )
+                    )
+                )
                 else -> elements.addAll(parseMarkdownToElements(child, markdownText))
             }
         }
@@ -159,9 +219,23 @@ class MarkdownProcessorImpl : MarkdownProcessor {
         for (child in node.children) {
             when (child.type) {
                 MarkdownElementTypes.EMPH ->
-                    elements.add(MarkdownElement.InlineElement.Italic(extractText(child, markdownText)))
+                    elements.add(
+                        MarkdownElement.InlineElement.Italic(
+                            extractText(
+                                child,
+                                markdownText
+                            )
+                        )
+                    )
                 MarkdownElementTypes.STRONG ->
-                    elements.add(MarkdownElement.InlineElement.Bold(extractText(child, markdownText)))
+                    elements.add(
+                        MarkdownElement.InlineElement.Bold(
+                            extractText(
+                                child,
+                                markdownText
+                            )
+                        )
+                    )
                 MarkdownElementTypes.INLINE_LINK -> {
                     val isImage = child.startOffset > 0 && markdownText[child.startOffset - 1] == '!'
                     if (isImage) {
@@ -171,7 +245,11 @@ class MarkdownProcessorImpl : MarkdownProcessor {
                     }
                 }
                 MarkdownTokenTypes.TEXT ->
-                    elements.add(MarkdownElement.InlineElement.Text(child.getTextInNode(markdownText).toString()))
+                    elements.add(
+                        MarkdownElement.InlineElement.Text(
+                            child.getTextInNode(markdownText).toString()
+                        )
+                    )
                 else -> elements.addAll(parseInlineElements(child, markdownText))
             }
         }

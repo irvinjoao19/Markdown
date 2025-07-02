@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Markdown"
 include(":app")
+include(":markdownlib")

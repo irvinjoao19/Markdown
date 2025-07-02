@@ -7,10 +7,8 @@ import org.intellij.markdown.ast.getTextInNode
 import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
 import org.intellij.markdown.parser.MarkdownParser
 
-
-class MarkdownProcessorImpl : MarkdownProcessor {
-
-    override fun parse(markdown: String): List<MarkdownElement> {
+object MarkdownParser {
+    fun parse(markdown: String): List<MarkdownElement> {
         val elements = mutableListOf<MarkdownElement>()
         val flavour = CommonMarkFlavourDescriptor()
         val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(markdown)
@@ -51,7 +49,7 @@ class MarkdownProcessorImpl : MarkdownProcessor {
         var tableStart = -1
         var currentPos = 0
 
-        lines.forEachIndexed { index, line ->
+        lines.forEachIndexed { _, line ->
             val lineStart = currentPos
             val lineEnd = currentPos + line.length
 
@@ -61,7 +59,6 @@ class MarkdownProcessorImpl : MarkdownProcessor {
                 }
             } else {
                 if (tableStart != -1) {
-                    // Verificar si el bloque anterior era una tabla válida
                     val tableText = markdown.substring(tableStart, currentPos)
                     if (isMarkdownTable(tableText)) {
                         blocks.add(Triple(tableStart, currentPos, tableText))
@@ -70,10 +67,9 @@ class MarkdownProcessorImpl : MarkdownProcessor {
                 }
             }
 
-            currentPos = lineEnd + 1 // +1 para el salto de línea
+            currentPos = lineEnd + 1
         }
 
-        // Agregar la última tabla si existe
         if (tableStart != -1) {
             val tableText = markdown.substring(tableStart, currentPos)
             if (isMarkdownTable(tableText)) {
@@ -83,6 +79,7 @@ class MarkdownProcessorImpl : MarkdownProcessor {
 
         return blocks
     }
+
     private fun parseMarkdownToElements(node: ASTNode, markdownText: String): List<MarkdownElement> {
         val elements = mutableListOf<MarkdownElement>()
 
@@ -107,46 +104,26 @@ class MarkdownProcessorImpl : MarkdownProcessor {
         return elements
     }
 
-    private fun extractText(node: ASTNode, markdownText: String): String {
-        val builder = StringBuilder()
-
-        fun recurse(current: ASTNode) {
-            if (current.type == MarkdownTokenTypes.TEXT) {
-                builder.append(current.getTextInNode(markdownText))
-                builder.append(" ")
-            } else {
-                current.children.forEach { recurse(it) }
-            }
-        }
-
-        recurse(node)
-        return builder.toString().trim()
-    }
-
     private fun parseParagraph(node: ASTNode, markdownText: String): List<MarkdownElement> {
-        val rawText = extractText(node, markdownText)
         val elements = mutableListOf<MarkdownElement>()
 
-        // Primero verificar si es una tabla
-        if (isMarkdownTable(rawText)) {
-            try {
-                elements.add(parseTable(rawText))
-                // Buscar texto adicional después de la tabla
-                val remainingText = rawText.lines()
-                    .dropWhile { it.trim().isNotEmpty() && !it.trim().startsWith("|") }
-                    .dropWhile { it.trim().isNotEmpty() }
-                    .joinToString("\n")
+        val rawText = extractText(node, markdownText)
+        val lines = rawText.lines()
 
-                if (remainingText.isNotBlank()) {
-                    elements.addAll(parseParagraph(node, remainingText))
-                }
-                return elements
-            } catch (e: Exception) {
-                // Si falla, continuar con el procesamiento normal
+        if (lines.isNotEmpty() && lines[0].trim().startsWith("|") && isMarkdownTable(rawText)) {
+            elements.add(parseTable(rawText))
+
+            val remainingText = rawText.lines()
+                .dropWhile { it.trim().isNotEmpty() && !it.trim().startsWith("|") }
+                .dropWhile { it.trim().isNotEmpty() }
+                .joinToString("\n")
+
+            if (remainingText.isNotBlank()) {
+                elements.addAll(parseParagraph(node, remainingText))
             }
+            return elements
         }
 
-        // Procesamiento normal para no tablas
         val inlineElements = parseInlineElements(node, markdownText)
         elements.add(MarkdownElement.RichParagraph(inlineElements))
 
@@ -221,10 +198,8 @@ class MarkdownProcessorImpl : MarkdownProcessor {
 
         if (lines.size < 2) return false
 
-        // Verificar que al menos la primera línea contenga pipes
         if (!lines[0].contains("|")) return false
 
-        // Verificar que la segunda línea sea un separador válido
         val separatorLine = lines[1].trim()
         val separatorPattern = Regex("""^[\s\|]*[-:]+[\s\|]*[-:\s\|]+$""")
         if (!separatorPattern.matches(separatorLine)) return false
@@ -236,24 +211,23 @@ class MarkdownProcessorImpl : MarkdownProcessor {
         val lines = tableText.trim().lines()
             .filter { it.trim().isNotEmpty() }
 
-        // Procesar encabezados (primera línea)
         val headers = lines.first().split("|")
             .map { it.trim() }
             .filter { it.isNotEmpty() }
 
-        // Procesar filas (omitimos la línea de separador)
         val rows = lines.drop(2).mapNotNull { row ->
             val cells = row.split("|")
                 .map { it.trim() }
                 .filter { it.isNotEmpty() }
 
-            // Solo incluir filas que tengan el mismo número de columnas que los encabezados
             if (cells.size == headers.size) cells else null
         }
 
         return MarkdownElement.Table(headers, rows)
     }
+
+    private fun extractText(node: ASTNode, markdownText: String): String {
+        return node.getTextInNode(markdownText).toString()
+    }
 }
-
-
 

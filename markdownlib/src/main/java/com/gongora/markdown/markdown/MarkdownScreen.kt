@@ -39,12 +39,52 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 
 @Composable
-fun MarkdownScreen(viewModel: MarkdownViewModel, modifier: Modifier) {
-    RenderMarkdown(viewModel.elements, modifier)
+fun DefaultHeader(text: String, level: Int) {
+    Text(
+        text = text,
+        fontSize = when (level) {
+            1 -> 32.sp
+            2 -> 28.sp
+            3 -> 26.sp
+            4 -> 20.sp
+            5 -> 16.sp
+            else -> 12.sp
+        },
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
 }
 
 @Composable
-fun RenderMarkdown(elements: List<MarkdownElement>, modifier: Modifier) {
+fun Markdown(
+    markdown: String,
+    modifier: Modifier = Modifier,
+    header: @Composable (text: String, level: Int) -> Unit = { text, level ->
+        DefaultHeader(text, level)
+    },
+    image: @Composable (alt: String, url: String) -> Unit = { alt, url ->
+        DefaultImage(MarkdownElement.Image(alt, url))
+    },
+    table: @Composable (
+        headers: List<String>,
+        rows: List<List<String>>,
+        modifier: Modifier
+    ) -> Unit = { h, r, m ->
+        DefaultTable(h, r, m)
+    }
+) {
+    val elements = remember(markdown) { MarkdownParser.parse(markdown) }
+    RenderMarkdown(elements, modifier, header, image, table)
+}
+
+@Composable
+private fun RenderMarkdown(
+    elements: List<MarkdownElement>,
+    modifier: Modifier,
+    header: @Composable (text: String, level: Int) -> Unit,
+    image: @Composable (alt: String, url: String) -> Unit,
+    table: @Composable (headers: List<String>, rows: List<List<String>>, modifier: Modifier) -> Unit
+) {
     val scrollState = rememberScrollState()
     Column(
         modifier = modifier
@@ -53,19 +93,7 @@ fun RenderMarkdown(elements: List<MarkdownElement>, modifier: Modifier) {
     ) {
         elements.forEach { element ->
             when (element) {
-                is MarkdownElement.Header -> Text(
-                    text = element.text,
-                    fontSize = when (element.level) {
-                        1 -> 32.sp
-                        2 -> 28.sp
-                        3 -> 26.sp
-                        4 -> 20.sp
-                        5 -> 16.sp
-                        else -> 12.sp
-                    },
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+                is MarkdownElement.Header -> header(element.text, element.level)
 
                 is MarkdownElement.RichParagraph -> RenderRichParagraph(element)
 
@@ -101,9 +129,9 @@ fun RenderMarkdown(elements: List<MarkdownElement>, modifier: Modifier) {
                     modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
                 )
 
-                is MarkdownElement.Image -> RenderImage(element)
+                is MarkdownElement.Image -> image(element.altText, element.url)
 
-                is MarkdownElement.Table -> BcpTable(
+                is MarkdownElement.Table -> table(
                     element.headers,
                     element.rows,
                     modifier,
@@ -114,7 +142,7 @@ fun RenderMarkdown(elements: List<MarkdownElement>, modifier: Modifier) {
 }
 
 @Composable
-fun RenderImage(element: MarkdownElement.Image) {
+fun DefaultImage(element: MarkdownElement.Image) {
     val imageLoader = ImageLoader.Builder(LocalContext.current)
         .crossfade(true)
         .build()
@@ -226,7 +254,7 @@ fun RenderRichParagraph(element: MarkdownElement.RichParagraph) {
 }
 
 @Composable
-fun BcpTable(
+fun DefaultTable(
     headers: List<String>,
     rows: List<List<String>>,
     modifier: Modifier = Modifier,

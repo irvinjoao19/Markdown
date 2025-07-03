@@ -8,9 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import com.gongora.markdown.markdown.MarkdownProcessorImpl
-import com.gongora.markdown.markdown.MarkdownScreen
-import com.gongora.markdown.markdown.MarkdownViewModel
+import com.gongora.markdown.markdown.Markdown
 import com.gongora.markdown.ui.theme.MarkdownTheme
 
 class MainActivity : ComponentActivity() {
@@ -28,7 +26,7 @@ class MainActivity : ComponentActivity() {
                         interfaz conversacional.
                         
                         ---
-                        [<img src="https://i.sstatic.net/IfLtg.png?s=256"/>]()
+                        ![](https://i.sstatic.net/IfLtg.png?s=256)
                         ---
                         
                         ## ✨ Características
@@ -148,10 +146,10 @@ class MainActivity : ComponentActivity() {
                     """.trimIndent()
 
 
-                    val viewModel = MarkdownViewModel(MarkdownProcessorImpl())
-                    viewModel.loadMarkdown(markdownSample)
-
-                    MarkdownScreen(viewModel, modifier = Modifier.padding(innerPadding))
+                    Markdown(
+                        markdown = markdownSample,
+                        modifier = Modifier.padding(innerPadding)
+                    )
 
                 }
             }

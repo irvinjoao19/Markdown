@@ -5,27 +5,23 @@ import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.getTextInNode
 import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
-import org.intellij.markdown.parser.MarkdownParser
+import org.intellij.markdown.parser.MarkdownParser as IntellijMarkdownParser
 
 object MarkdownParser {
     fun parse(markdown: String): List<MarkdownElement> {
         val elements = mutableListOf<MarkdownElement>()
         val flavour = CommonMarkFlavourDescriptor()
-        val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(markdown)
 
-        // Procesar nodos manteniendo el orden original
         var currentPos = 0
         val tableBlocks = findTableBlocks(markdown)
 
         tableBlocks.forEach { (start, end, tableText) ->
-            // Procesar contenido antes de la tabla
             if (currentPos < start) {
                 val nonTableText = markdown.substring(currentPos, start)
-                val nonTableTree = MarkdownParser(flavour).buildMarkdownTreeFromString(nonTableText)
+                val nonTableTree = IntellijMarkdownParser(flavour).buildMarkdownTreeFromString(nonTableText)
                 elements.addAll(parseMarkdownToElements(nonTableTree, nonTableText))
             }
 
-            // Procesar la tabla
             if (isMarkdownTable(tableText)) {
                 elements.add(parseTable(tableText))
             }
@@ -33,10 +29,9 @@ object MarkdownParser {
             currentPos = end
         }
 
-        // Procesar contenido después de la última tabla
         if (currentPos < markdown.length) {
             val remainingText = markdown.substring(currentPos)
-            val remainingTree = MarkdownParser(flavour).buildMarkdownTreeFromString(remainingText)
+            val remainingTree = IntellijMarkdownParser(flavour).buildMarkdownTreeFromString(remainingText)
             elements.addAll(parseMarkdownToElements(remainingTree, remainingText))
         }
 
@@ -97,11 +92,26 @@ object MarkdownParser {
                 MarkdownElementTypes.LIST_ITEM -> elements.add(MarkdownElement.ListItem(extractText(child, markdownText), false))
                 MarkdownElementTypes.CODE_BLOCK -> elements.add(MarkdownElement.CodeBlock(extractText(child, markdownText)))
                 MarkdownElementTypes.BLOCK_QUOTE -> elements.add(MarkdownElement.Quote(extractText(child, markdownText)))
+                MarkdownElementTypes.IMAGE -> elements.add(parseImageElement(child,markdownText))
                 else -> elements.addAll(parseMarkdownToElements(child, markdownText))
             }
         }
 
         return elements
+    }
+
+    private fun extractText(node: ASTNode, markdownText: String): String {
+        val builder = StringBuilder()
+        fun recurse(current : ASTNode){
+            if(current.type == MarkdownTokenTypes.TEXT){
+                builder.append(current.getTextInNode(markdownText))
+                builder.append(" ")
+            }else{
+                current.children.forEach { recurse(it) }
+            }
+        }
+        recurse(node)
+        return builder.toString().trim()
     }
 
     private fun parseParagraph(node: ASTNode, markdownText: String): List<MarkdownElement> {
@@ -184,6 +194,20 @@ object MarkdownParser {
         return MarkdownElement.InlineElement.Image(altText, url)
     }
 
+    private fun parseImageElement(node: ASTNode,markdownText: String): MarkdownElement.Image{
+        val raw = markdownText.substring(node.startOffset,node.endOffset).trim()
+
+        val imageRegex = Regex("""!\[(.*?)]\((.*?)\)""")
+        val match = imageRegex.find(raw)
+        return if(match != null){
+            val altText = match.groupValues[1]
+            val url = match.groupValues[2]
+            MarkdownElement.Image(altText,url)
+        }else{
+            MarkdownElement.Image("","")
+        }
+    }
+
     private fun parseListElement(node: ASTNode, markdownText: String, ordered: Boolean): MarkdownElement.List {
         val items = node.children
             .filter { it.type == MarkdownElementTypes.LIST_ITEM }
@@ -201,7 +225,7 @@ object MarkdownParser {
         if (!lines[0].contains("|")) return false
 
         val separatorLine = lines[1].trim()
-        val separatorPattern = Regex("""^[\s\|]*[-:]+[\s\|]*[-:\s\|]+$""")
+        val separatorPattern = Regex("""^[\s|]*[-:]+[\s|]*[-:\s|]+$""")
         if (!separatorPattern.matches(separatorLine)) return false
 
         return true
@@ -224,10 +248,6 @@ object MarkdownParser {
         }
 
         return MarkdownElement.Table(headers, rows)
-    }
-
-    private fun extractText(node: ASTNode, markdownText: String): String {
-        return node.getTextInNode(markdownText).toString()
     }
 }
 

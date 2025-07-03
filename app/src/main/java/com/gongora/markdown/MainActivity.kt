@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
                         interfaz conversacional.
                         
                         ---
-                        [<img src="https://i.sstatic.net/IfLtg.png?s=256"/>]()
+                        ![](https://i.sstatic.net/IfLtg.png?s=256)
                         ---
                         
                         ## ✨ Características
